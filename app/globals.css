@@ -1,26 +1,170 @@
 @import "tailwindcss";
 
+/* Light Mode Colors */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --radius: 0.5rem;
+  
+  /* Light Mode - Neutral Colors */
+  --color-background: 0 0% 100%;
+  --color-foreground: 0 0% 3.6%;
+  --color-border: 0 0% 89.8%;
+  --color-input: 0 0% 89.8%;
+  --color-ring: 0 0% 3.6%;
+  
+  /* Light Mode - Primary (Blue) */
+  --color-primary: 217.2 91.2% 59.8%;
+  --color-primary-foreground: 210 40% 98%;
+  
+  /* Light Mode - Secondary (Gray) */
+  --color-secondary: 0 0% 96.1%;
+  --color-secondary-foreground: 0 0% 3.6%;
+  
+  /* Light Mode - Semantic Colors */
+  --color-destructive: 0 84.2% 60.2%;
+  --color-destructive-foreground: 210 40% 98%;
+  --color-muted: 0 0% 96.1%;
+  --color-muted-foreground: 215.4 16.3% 46.9%;
+  --color-accent: 217.2 91.2% 59.8%;
+  --color-accent-foreground: 210 40% 98%;
+  --color-popover: 0 0% 100%;
+  --color-popover-foreground: 0 0% 3.6%;
+  --color-card: 0 0% 100%;
+  --color-card-foreground: 0 0% 3.6%;
+  
+  /* Light Mode - Status Colors */
+  --color-success: 142.3 71.8% 29.2%;
+  --color-warning: 38.6 92.1% 50.2%;
+  --color-info: 206.2 100% 50.2%;
+  
+  /* Font Variables */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono: Menlo, Monaco, "Courier New", monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
+/* Dark Mode Colors */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Dark Mode - Neutral Colors */
+    --color-background: 0 0% 3.6%;
+    --color-foreground: 0 0% 98%;
+    --color-border: 0 0% 14.9%;
+    --color-input: 0 0% 14.9%;
+    --color-ring: 217.2 91.2% 59.8%;
+    
+    /* Dark Mode - Primary */
+    --color-primary: 217.2 91.2% 59.8%;
+    --color-primary-foreground: 217.2 32.6% 17.5%;
+    
+    /* Dark Mode - Secondary */
+    --color-secondary: 0 0% 14.9%;
+    --color-secondary-foreground: 0 0% 98%;
+    
+    /* Dark Mode - Semantic Colors */
+    --color-destructive: 0 62.8% 30.6%;
+    --color-destructive-foreground: 210 40% 98%;
+    --color-muted: 0 0% 14.9%;
+    --color-muted-foreground: 215.4 13.8% 69%;
+    --color-accent: 217.2 91.2% 59.8%;
+    --color-accent-foreground: 217.2 32.6% 17.5%;
+    --color-popover: 0 0% 3.6%;
+    --color-popover-foreground: 0 0% 98%;
+    --color-card: 0 0% 3.6%;
+    --color-card-foreground: 0 0% 98%;
+    
+    /* Dark Mode - Status Colors */
+    --color-success: 142.3 76.2% 36.3%;
+    --color-warning: 38.6 92.1% 50.2%;
+    --color-info: 206.2 100% 50.2%;
   }
 }
 
+* {
+  border-color: hsl(var(--color-border) / 1);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: hsl(var(--color-background) / 1);
+  color: hsl(var(--color-foreground) / 1);
+  font-family: var(--font-sans);
+  font-feature-settings: "rlig" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: hsl(var(--color-muted) / 1);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--color-muted-foreground) / 1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--color-foreground) / 1);
+}
+
+/* Selection Styling */
+::selection {
+  background-color: hsl(var(--color-primary) / 1);
+  color: hsl(var(--color-primary-foreground) / 1);
+}
+
+/* Focus Visible */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--color-background) / 1),
+    0 0 0 4px hsl(var(--color-ring) / 1);
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Print Styles */
+@media print {
+  body {
+    background-color: white;
+    color: black;
+  }
 }
