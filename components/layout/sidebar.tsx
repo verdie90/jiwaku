@@ -19,6 +19,7 @@ import {
   Home,
   Users,
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const MENU_ITEMS = [
   {
@@ -73,6 +74,7 @@ export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { sidebarOpen, setSidebarOpen } = useAppStore();
+  const { logout } = useAuth();
   const [isMobile, setIsMobile] = React.useState(false);
 
   React.useEffect(() => {
@@ -91,8 +93,7 @@ export function Sidebar({ user }: SidebarProps) {
 
   const handleLogout = async () => {
     try {
-      const { authService } = await import("@/services/auth.service");
-      await authService.logout();
+      await logout();
       router.push("/login");
     } catch (error) {
       console.error("Logout error:", error);

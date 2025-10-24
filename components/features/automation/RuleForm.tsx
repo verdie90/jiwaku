@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { useAutomation } from '@/hooks/useAutomation';
 import { Button } from '@/components/ui/button';

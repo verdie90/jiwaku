@@ -10,32 +10,93 @@ export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const { setNotification } = useAppStore();
 
-  // Listen to auth state changes
+  // Ensure component is mounted before accessing localStorage
   useEffect(() => {
-    const unsubscribe = authService.onAuthStateChanged(async (firebaseUser) => {
+    setIsMounted(true);
+  }, []);
+
+  // Initialize auth state from session token
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const initializeAuth = async () => {
       try {
-        if (firebaseUser) {
-          const currentSession = await authService.getCurrentSession();
-          if (currentSession) {
-            setUser(currentSession.user);
-            setSession(currentSession);
+        // Try to get session token and user from localStorage
+        const token = localStorage.getItem('authToken');
+        const cachedUserStr = localStorage.getItem('cachedUser');
+        
+        if (token && cachedUserStr) {
+          try {
+            // Parse cached user
+            const cachedUser = JSON.parse(cachedUserStr);
+            
+            // Try to verify session with Firestore
+            try {
+              const verifiedUser = await authService.verifySession(token);
+              if (verifiedUser) {
+                // Firestore session found and valid
+                setUser(verifiedUser);
+                setSession({
+                  user: verifiedUser,
+                  token: {
+                    accessToken: token,
+                    expiresIn: 24 * 60 * 60,
+                  },
+                  expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                });
+              } else {
+                // Firestore session not found, use cached user
+                // This handles cases where sessions collection doesn't exist yet
+                setUser(cachedUser);
+                setSession({
+                  user: cachedUser,
+                  token: {
+                    accessToken: token,
+                    expiresIn: 24 * 60 * 60,
+                  },
+                  expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                });
+              }
+            } catch (verifyErr) {
+              // Verification error, use cached user
+              console.warn("Session verification failed, using cached user:", verifyErr);
+              setUser(cachedUser);
+              setSession({
+                user: cachedUser,
+                token: {
+                  accessToken: token,
+                  expiresIn: 24 * 60 * 60,
+                },
+                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+              });
+            }
+          } catch (parseErr) {
+            console.error("Failed to parse cached user:", parseErr);
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('cachedUser');
+            setUser(null);
+            setSession(null);
           }
         } else {
+          // No token or cached user, not authenticated
           setUser(null);
           setSession(null);
         }
       } catch (err) {
         setError(err as Error);
-        console.error("Auth error:", err);
+        console.error("Auth initialization error:", err);
+        setUser(null);
+        setSession(null);
       } finally {
         setIsLoading(false);
       }
-    });
+    };
 
-    return unsubscribe;
-  }, []);
+    initializeAuth();
+  }, [isMounted]);
 
   const login = useCallback(
     async (email: string, password: string) => {
@@ -43,13 +104,22 @@ export function useAuth() {
       setError(null);
 
       try {
-        const user = await authService.login(email, password);
+        const { user, token } = await authService.login(email, password);
         setUser(user);
 
-        const session = await authService.getCurrentSession();
-        if (session) {
-          setSession(session);
-        }
+        // Store token AND user in localStorage for fallback
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('cachedUser', JSON.stringify(user));
+
+        const sessionData: Session = {
+          user,
+          token: {
+            accessToken: token,
+            expiresIn: 24 * 60 * 60,
+          },
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        };
+        setSession(sessionData);
 
         setNotification({
           id: "login-success",
@@ -127,7 +197,16 @@ export function useAuth() {
     setError(null);
 
     try {
-      await authService.logout();
+      // Get token from session
+      const token = session?.token.accessToken;
+      if (token) {
+        await authService.logout(token);
+      }
+
+      // Clear localStorage
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('cachedUser');
+
       setUser(null);
       setSession(null);
 
@@ -154,7 +233,7 @@ export function useAuth() {
     } finally {
       setIsLoading(false);
     }
-  }, [setNotification]);
+  }, [session, setNotification]);
 
   const isAuthenticated = !!user && !!session;
   const currentUser = user;

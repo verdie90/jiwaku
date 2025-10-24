@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { useAutomation, useRuleBuilder, useRuleTemplates } from '@/hooks/useAutomation';
 import { RulesList } from './RulesList';

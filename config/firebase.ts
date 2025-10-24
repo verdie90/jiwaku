@@ -1,3 +1,7 @@
+import { initializeApp, getApps } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+
 // Firebase Configuration
 export const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyBvgeZeOdkfETaq49f9xn-TW-IaYA2QMIY",
@@ -8,6 +12,15 @@ export const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:1009946387193:web:e62fea56745496e991b828",
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-38B43K3ZJX",
 };
+
+// Initialize Firebase
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+
+// Initialize Firestore
+export const db = getFirestore(app);
+
+// Initialize Auth
+export const auth = getAuth(app);
 
 // Firebase Collection Names
 export const FIRESTORE_COLLECTIONS = {

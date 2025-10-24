@@ -1,38 +1,18 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 /**
  * Middleware untuk route protection dan redirect
+ * Note: Since auth tokens are stored in localStorage (client-side only),
+ * we cannot check them in middleware (server-side). 
+ * Route protection is handled by client-side layout components.
  */
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Public routes yang tidak memerlukan auth
-  const publicRoutes = [
-    "/",
-    "/login",
-    "/register",
-    "/forgot-password",
-    "/api/auth",
-  ];
-
-  // Check if route is public
-  const isPublicRoute = publicRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-
-  // Get auth token dari cookies
-  const token = request.cookies.get("auth-token")?.value;
-
-  // If protected route and no token, redirect to login
-  if (!isPublicRoute && !token) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  // If logged in and trying to access auth pages, redirect to dashboard
-  if (token && (pathname === "/login" || pathname === "/register")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
+export async function middleware() {
+  // Auth token is stored in localStorage (client-side only)
+  // Cannot access it in middleware (server-side)
+  // Client-side route protection is handled in layout.client.tsx components
+  
+  // Just let all requests pass through
+  // Client components will handle auth redirects based on user state
   return NextResponse.next();
 }
 

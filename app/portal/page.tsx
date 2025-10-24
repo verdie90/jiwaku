@@ -1,21 +1,16 @@
 'use client';
 
-import { Metadata } from 'next';
+import React, { useEffect, useState } from 'react';
 import PortalDashboard from '@/components/features/portal/PortalDashboard';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-
-export const metadata: Metadata = {
-  title: 'Customer Portal | Jiwaku CRM',
-  description: 'Manage your support tickets and track issues',
-};
 
 export default function PortalPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const [portalUserId, setPortalUserId] = useState<string>('');
   const [teamId, setTeamId] = useState<string>('');
+  const redirectRef = React.useRef(false);
 
   useEffect(() => {
     if (!isLoading) {
@@ -23,9 +18,10 @@ export default function PortalPage() {
       if (user?.id) {
         setPortalUserId(user.id);
         setTeamId(user.teamId || 'default-team');
-      } else {
+      } else if (!redirectRef.current) {
+        redirectRef.current = true;
         // Redirect to login if not authenticated
-        router.push('/auth/login');
+        router.push('/login');
       }
     }
   }, [user, isLoading, router]);
@@ -48,7 +44,7 @@ export default function PortalPage() {
       portalUserName={user?.name || 'Customer'}
       onLogout={() => {
         localStorage.removeItem('auth_token');
-        router.push('/auth/login');
+        router.push('/login');
       }}
     />
   );

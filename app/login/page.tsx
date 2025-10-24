@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -10,13 +11,22 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, user } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     rememberMe: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [hasAttemptedRedirect, setHasAttemptedRedirect] = useState(false);
+
+  // If user is already logged in, redirect to dashboard
+  React.useEffect(() => {
+    if (user && !hasAttemptedRedirect) {
+      setHasAttemptedRedirect(true);
+      router.push("/dashboard");
+    }
+  }, [user, router, hasAttemptedRedirect]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.currentTarget;
@@ -61,7 +71,7 @@ export default function LoginPage() {
 
     try {
       await login(formData.email, formData.password);
-      router.push("/dashboard");
+      // Redirect handled by useEffect when user state updates
     } catch (error) {
       console.error("Login error:", error);
       setErrors((prev) => ({

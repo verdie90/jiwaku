@@ -1,15 +1,9 @@
 'use client';
 
-import { Metadata } from 'next';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import ReportBuilder from '@/components/features/reports/ReportBuilder';
-
-export const metadata: Metadata = {
-  title: 'Custom Reports | Jiwaku CRM',
-  description: 'Build, execute, and manage custom reports for your team',
-};
 
 /**
  * Reports Page
@@ -19,13 +13,15 @@ export default function ReportsPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const [teamId, setTeamId] = useState<string>('');
+  const redirectRef = React.useRef(false);
 
   useEffect(() => {
     if (!isLoading) {
       if (user?.teamId) {
         setTeamId(user.teamId);
-      } else {
-        router.push('/auth/login');
+      } else if (!redirectRef.current) {
+        redirectRef.current = true;
+        router.push('/login');
       }
     }
   }, [user, isLoading, router]);
